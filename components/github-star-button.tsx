@@ -9,7 +9,7 @@ interface GitHubStarButtonProps {
 }
 
 export function GitHubStarButton({
-  repoUrl = "https://github.com/yourusername/pdf-to-markdown",
+  repoUrl = "https://github.com/mrmps/pdf2md",
   className,
 }: GitHubStarButtonProps) {
   return (

@@ -174,7 +174,7 @@ export function FileUploader({ onConversionComplete, isConverting, setIsConverti
             </div>
           ) : (
             <div className="flex gap-4">
-              <Button variant="outline" onClick={() => inputRef.current?.click()} disabled={isConverting}>
+              <Button onClick={() => inputRef.current?.click()} disabled={isConverting}>
                 Select PDF
               </Button>
 

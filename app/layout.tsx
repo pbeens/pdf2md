@@ -62,8 +62,8 @@ export const metadata: Metadata = {
     description:
       'Convert PDF files to Markdown instantly in your browser. 100% privacy: your files never leave your device. Supports headings, tables, lists, and more. Fast, free unlimited, and secure PDF to Markdown conversion tool.',
     images: ['/og.png'],
-    creator: '@yourtwitter',
-    site: '@yourtwitter',
+    creator: '@michaelchomsky',
+    site: '@michaelchomsky',
   },
   icons: {
     icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>',

@@ -5,115 +5,225 @@ import { FileUploader } from "@/components/file-uploader"
 import { MarkdownPreview } from "@/components/markdown-preview"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FileText, Code } from "lucide-react"
+import { FileText, Code, ArrowRight, Download } from "lucide-react"
 import { FaqSection } from "@/components/faq-section"
-import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { GitHubStarButton } from "@/components/github-star-button"
+import JSZip from "jszip"
+
+interface ConversionResult {
+  markdown: string
+  fileName: string
+  id: string // unique identifier for each conversion
+}
 
 export default function Home() {
-  const [markdown, setMarkdown] = useState<string | null>(null)
+  const [conversions, setConversions] = useState<ConversionResult[]>([])
   const [isConverting, setIsConverting] = useState(false)
-  const [fileName, setFileName] = useState<string | null>(null)
+  const [activeConversion, setActiveConversion] = useState<string | null>(null)
+
+  const handleConversionComplete = (markdown: string, file: File) => {
+    const newConversion = {
+      markdown,
+      fileName: file.name,
+      id: `${file.name}-${Date.now()}` // create unique id
+    }
+    setConversions(prev => [...prev, newConversion])
+    setActiveConversion(newConversion.id) // set as active
+  }
+
+  const activeResult = conversions.find(c => c.id === activeConversion) || conversions[0]
+
+  const downloadAllMarkdown = () => {
+    // If there's only one file, download it directly
+    if (conversions.length === 1) {
+      const element = document.createElement("a")
+      const file = new Blob([conversions[0].markdown], { type: "text/markdown" })
+      element.href = URL.createObjectURL(file)
+      element.download = conversions[0].fileName.replace(/\.pdf$/i, "") + ".md"
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
+      return
+    }
+
+    // For multiple files, create a zip
+    const zip = new JSZip()
+    conversions.forEach(conversion => {
+      zip.file(
+        conversion.fileName.replace(/\.pdf$/i, "") + ".md",
+        conversion.markdown
+      )
+    })
+    
+    zip.generateAsync({ type: "blob" }).then(content => {
+      const element = document.createElement("a")
+      element.href = URL.createObjectURL(content)
+      element.download = "markdown-conversions.zip"
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
+    })
+  }
 
   return (
-    <main className="container mx-auto py-10 px-4 max-w-5xl">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-center sm:text-left">PDF to Markdown Converter</h1>
-        <GitHubStarButton className="mt-2 sm:mt-0" />
-      </div>
-
-      <p className="text-center mb-8 text-muted-foreground">
-        Upload a PDF file to convert it to Markdown format
-        <span className="block text-xs mt-1 text-green-600 font-medium">
-          100% browser-based - your files never leave your device
-        </span>
-      </p>
-
-      <div className="grid gap-8">
-        <FileUploader
-          onConversionComplete={(result, file) => {
-            setMarkdown(result)
-            setFileName(file.name)
-          }}
-          isConverting={isConverting}
-          setIsConverting={setIsConverting}
-        />
-
-        {markdown && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Conversion Result</h2>
-              <Button
-                onClick={() => {
-                  if (!markdown || !fileName) return
-
-                  const element = document.createElement("a")
-                  const file = new Blob([markdown], { type: "text/markdown" })
-                  element.href = URL.createObjectURL(file)
-                  element.download = fileName.replace(/\.pdf$/i, "") + ".md"
-                  document.body.appendChild(element)
-                  element.click()
-                  document.body.removeChild(element)
-                }}
-                variant="outline"
-                size="sm"
-              >
-                Download Markdown
-              </Button>
+    <main className="min-h-screen bg-gradient-to-b from-transparent to-gray-50/50 dark:to-gray-900/20">
+      <div className="container mx-auto py-16 px-4 max-w-4xl">
+        <div className="relative">
+          {/* Top accent line with gradient */}
+          <div className="absolute -top-16 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-800 to-transparent" />
+          
+          {/* Header content */}
+          <div className="space-y-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="inline-flex items-center px-4 py-1.5 mb-6 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  100% browser-based conversion
+                </span>
+              </div>
+              
+              <h1 className="text-5xl font-bold tracking-tight text-center bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 dark:from-white dark:via-gray-300 dark:to-gray-500 mb-4 max-w-2xl">
+                Transform Your PDFs into Clean Markdown
+              </h1>
+              
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mb-8">
+                Instantly convert multiple PDF documents to perfectly formatted Markdown. Your files never leave your device — everything happens right in your browser.
+              </p>
+              
+              <div className="flex items-center gap-6">
+                <Button 
+                  className="h-12 px-6 text-sm font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100 transition-colors"
+                  onClick={() => {
+                    document.querySelector('#file-uploader')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                >
+                  Convert PDFs Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <GitHubStarButton className="h-12" />
+              </div>
             </div>
-
-            <Tabs defaultValue="preview" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="preview" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Preview
-                </TabsTrigger>
-                <TabsTrigger value="markdown" className="flex items-center gap-2">
-                  <Code className="h-4 w-4" />
-                  Markdown
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="preview" className="mt-4">
-                <MarkdownPreview markdown={markdown} />
-              </TabsContent>
-              <TabsContent value="markdown" className="mt-4">
-                <div className="relative">
-                  <Card className="overflow-hidden">
-                    <ScrollArea className="h-[600px] w-full">
-                      <pre className="p-4 text-sm whitespace-pre-wrap break-words overflow-visible">
-                        <code>{markdown}</code>
-                      </pre>
-                    </ScrollArea>
-                  </Card>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute top-2 right-2 z-10"
-                    onClick={() => {
-                      navigator.clipboard.writeText(markdown || "")
-                      alert("Markdown copied to clipboard!")
-                    }}
-                  >
-                    Copy
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
           </div>
-        )}
-      </div>
-      <FaqSection />
-
-      <footer className="mt-12 text-center text-sm text-muted-foreground">
-        <div className="flex justify-center mb-2">
-          <GitHubStarButton />
+          
+          {/* Bottom accent line with gradient */}
+          <div className="absolute -bottom-16 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-800 to-transparent" />
         </div>
-        <p>
-          Made with ❤️ by <a href="https://twitter.com/michael_chomsky" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">@michael_chomsky</a>. If you found this tool helpful, please consider starring it on
-          GitHub.
-        </p>
-      </footer>
+
+        <div className="grid gap-12 mt-24" id="file-uploader">
+          <div className="transition-all duration-200 hover:scale-[1.01]">
+            <FileUploader
+              onConversionComplete={handleConversionComplete}
+              isConverting={isConverting}
+              setIsConverting={setIsConverting}
+            />
+          </div>
+
+          {conversions.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-8">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-semibold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                    Conversion Results
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {conversions.length} file{conversions.length > 1 ? 's' : ''} converted
+                  </p>
+                </div>
+                <Button
+                  onClick={downloadAllMarkdown}
+                  variant="outline"
+                  size="sm"
+                  className="h-10 px-4 font-medium bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download {conversions.length > 1 ? 'All' : 'Markdown'}
+                </Button>
+              </div>
+
+              {conversions.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+                  {conversions.map(conversion => (
+                    <Button
+                      key={conversion.id}
+                      variant={activeConversion === conversion.id ? "default" : "outline"}
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => setActiveConversion(conversion.id)}
+                    >
+                      {conversion.fileName.replace(/\.pdf$/i, '')}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+                <Tabs defaultValue="preview" className="w-full">
+                  <TabsList className="flex h-12 items-center gap-4 px-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+                    <TabsTrigger 
+                      value="preview" 
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Preview
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="markdown"
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm transition-all"
+                    >
+                      <Code className="h-4 w-4" />
+                      Markdown
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="preview" className="p-6">
+                    <div className="overflow-x-auto">
+                      <div className="max-w-full">
+                        <MarkdownPreview markdown={activeResult.markdown} />
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="markdown">
+                    <div className="relative">
+                      <ScrollArea className="h-[600px] w-full">
+                        <div className="p-6">
+                          <pre className="text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto">
+                            <code className="break-words whitespace-pre-wrap [overflow-wrap:anywhere]">
+                              {activeResult.markdown}
+                            </code>
+                          </pre>
+                        </div>
+                      </ScrollArea>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute top-4 right-4 z-10 h-8 px-3 font-medium bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-900 transition-colors border border-gray-200 dark:border-gray-700"
+                        onClick={() => {
+                          navigator.clipboard.writeText(activeResult.markdown)
+                          alert("Markdown copied to clipboard!")
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+          )}
+        </div>
+        <FaqSection />
+
+        <footer className="mt-20 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex justify-center mb-4">
+            <GitHubStarButton />
+          </div>
+          <p>
+            Made with ❤️ by <a href="https://twitter.com/michael_chomsky" target="_blank" rel="noopener noreferrer" className="text-gray-900 dark:text-white hover:underline">@michael_chomsky</a>. If you found this tool helpful, please consider starring it on
+            GitHub.
+          </p>
+        </footer>
+      </div>
     </main>
   )
 }
+

@@ -15,25 +15,32 @@ export function MarkdownPreview({ markdown, className }: MarkdownPreviewProps) {
     <Card className="border rounded-md overflow-hidden">
       <ScrollArea className="h-[600px] w-full">
         <div className="p-6">
-          <div className={cn("prose dark:prose-invert max-w-none", className)}>
+          <div className={cn("prose dark:prose-invert max-w-none break-words", className)}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
                 pre: ({ node, ...props }) => (
                   <pre
                     {...props}
-                    className="overflow-auto p-4 bg-muted rounded-md my-4 text-sm whitespace-pre-wrap break-all"
+                    className="overflow-x-auto p-4 bg-muted rounded-md my-4 text-sm [overflow-wrap:anywhere]"
                   />
                 ),
                 code: ({ node, inline, ...props }: any) => (
                   <code
                     {...props}
-                    className={cn("text-sm", inline ? "bg-muted px-1 py-0.5 rounded" : "block overflow-x-auto")}
+                    className={cn(
+                      "text-sm",
+                      inline
+                        ? "bg-muted px-1 py-0.5 rounded break-words"
+                        : "block overflow-x-auto [overflow-wrap:anywhere]"
+                    )}
                   />
                 ),
                 table: ({ children }) => (
-                  <div className="overflow-x-auto my-4">
-                    <table className="min-w-full border-collapse border border-gray-300">{children}</table>
+                  <div className="my-4 overflow-x-auto">
+                    <table className="min-w-full border-collapse border border-gray-300 table-auto">
+                      {children}
+                    </table>
                   </div>
                 ),
                 img: ({ src, alt }) => (
@@ -41,7 +48,19 @@ export function MarkdownPreview({ markdown, className }: MarkdownPreviewProps) {
                     <img src={src || "/placeholder.svg"} alt={alt} className="max-w-full h-auto" />
                   </div>
                 ),
-                p: ({ children }) => <p className="whitespace-pre-wrap break-words">{children}</p>,
+                p: ({ children }) => (
+                  <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{children}</p>
+                ),
+                a: ({ node, href, children }) => (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-words [overflow-wrap:anywhere]"
+                  >
+                    {children}
+                  </a>
+                ),
               }}
             >
               {markdown}

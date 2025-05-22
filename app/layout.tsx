@@ -37,13 +37,13 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: 'https://pdftomd.com/',
+    canonical: 'https://pdftomarkdown.co/',
   },
   openGraph: {
     title: 'PDF to Markdown Converter – Free Unlimited, Secure, 100% Browser-Based',
     description:
       'Convert PDF files to Markdown instantly in your browser. 100% privacy: your files never leave your device. Supports headings, tables, lists, and more. Fast, free unlimited, and secure PDF to Markdown conversion tool.',
-    url: 'https://pdftomd.com/',
+    url: 'https://pdftomarkdown.co/',
     siteName: 'PDF to Markdown Converter',
     type: 'website',
     locale: 'en_US',
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     shortcut: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>',
     apple: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>',
   },
-  metadataBase: new URL('https://pdftomd.com'),
+  metadataBase: new URL('https://pdftomarkdown.co'),
 }
 
 export default function RootLayout({

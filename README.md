@@ -70,22 +70,30 @@ Convert PDF files to Markdown instantly, securely, and 100% in your browser. No 
 1. Clone the repo:
    ```bash
    git clone https://github.com/mrmps/pdf2md
-   cd pdftomd
+   cd pdf2md
    ```
 2. Install dependencies:
    ```bash
    pnpm install
-   # or
+   ```
+   or
+   ```bash
    npm install
-   # or
+   ```
+   or
+   ```bash
    yarn install
    ```
 3. Start the development server:
    ```bash
    pnpm dev
-   # or
+   ```
+   or
+   ```bash
    npm run dev
-   # or
+   ```
+   or
+   ```bash
    yarn dev
    ```
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
